@@ -1,0 +1,132 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+int manhattan_distance(int x1, int y1, int x2, int y2)
+{
+    return abs(x1 - x2) + abs(y1 - y2);
+}
+
+int manhattan_distance_sum(vector<vector<int>> &state, vector<vector<int>> &goal_state)
+{
+    int distance_sum = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            int value = state[i][j];
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 3; col++)
+                {
+                    if (value == goal_state[row][col])
+                    {
+                        distance_sum += manhattan_distance(i, j, row, col);
+                    }
+                }
+            }
+        }
+    }
+    return distance_sum;
+}
+
+int calculate_f(vector<vector<int>> &state, vector<vector<int>> &goal_state)
+{
+    return manhattan_distance_sum(state, goal_state);
+}
+
+void get_next_states(vector<vector<int>> &state, vector<vector<vector<int>>> &next_states)
+{
+    int moves[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    int zero_row, zero_col;
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (state[i][j] == 0)
+            {
+                zero_row = i;
+                zero_col = j;
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        int new_row = zero_row + moves[i][0];
+        int new_col = zero_col + moves[i][1];
+
+        if (new_row >= 0 && new_row < 3 && new_col >= 0 && new_col < 3)
+        {
+            vector<vector<int>> new_state = state;
+            swap(new_state[zero_row][zero_col], new_state[new_row][new_col]);
+            next_states.push_back(new_state);
+        }
+    }
+}
+
+int main()
+{
+    vector<vector<int>> initial_state = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 0}};
+
+    vector<vector<int>> goal_state = {
+        {1, 2, 3},
+        {4, 8, 5},
+        {0, 7, 6}};
+
+    cout << "Initial State:" << endl;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            cout << initial_state[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    int initial_f = calculate_f(initial_state, goal_state);
+    cout << "f(x) = " << initial_f << endl;
+
+    vector<vector<vector<int>>> next_states;
+    get_next_states(initial_state, next_states);
+
+    int best_f = initial_f;
+    int best_index = -1;
+
+    cout << "\nBest Next State:" << endl;
+    for (int i = 0; i < next_states.size(); i++)
+    {
+        int f = calculate_f(next_states[i], goal_state);
+
+        if (f < best_f)
+        {
+            best_f = f;
+            best_index = i;
+        }
+    }
+
+    if (best_index != -1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                cout << next_states[best_index][i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << "f(x) of Best Next State: " << best_f << endl;
+    }
+    else
+    {
+        cout << "No better state found." << endl;
+    }
+
+    return 0;
+}
